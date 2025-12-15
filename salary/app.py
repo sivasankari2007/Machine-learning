@@ -5,7 +5,7 @@ import numpy as np
 # -------------------------------
 # Load the trained model
 # -------------------------------
-with open("", "rb") as file:
+with open("salary/salary_model.pkl", "rb") as file:
     model = pickle.load(file)
 
 # -------------------------------
@@ -23,3 +23,4 @@ experience = st.number_input("Years of Experience", min_value=0.0, max_value=50.
 # Prediction Button
 # -------------------------------
 if st.button("Predict Salary"):
+
