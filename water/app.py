@@ -15,7 +15,7 @@ st.set_page_config(
 # Load the trained model
 # -------------------------------
 try:
-    with open("", "rb") as file:
+    with open("water/hardness_model.pkl", "rb") as file:
         model = pickle.load(file)
 except FileNotFoundError:
     st.error("❌ salary_model.pkl not found. Please place it in the same folder as app.py")
@@ -39,3 +39,4 @@ experience = st.number_input(
 )
 
 # ----------------
+
