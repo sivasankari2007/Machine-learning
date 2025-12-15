@@ -6,37 +6,29 @@ import numpy as np
 # Page Configuration
 # -------------------------------
 st.set_page_config(
-    page_title="Salary Prediction App",
-    page_icon="💼",
+    page_title="Water Potability Prediction",
+    page_icon="💧",
     layout="centered"
 )
 
 # -------------------------------
-# Load the trained model
+# Load model and scaler
 # -------------------------------
 try:
-    with open("water/hardness_model.pkl", "rb") as file:
-        model = pickle.load(file)
+    with open("", "rb") as f:
+        model, scaler = pickle.load(f)
 except FileNotFoundError:
-    st.error("❌ salary_model.pkl not found. Please place it in the same folder as app.py")
+    st.error("❌ hardness_model.pkl not found. Please place it in the same folder as app.py")
     st.stop()
 
 # -------------------------------
 # App Title
 # -------------------------------
-st.title("💼 Salary Prediction App")
-st.write("Predict your estimated salary based on years of experience.")
+st.title("💧 Water Potability Prediction")
+st.write("Enter water quality parameters to predict if it is potable (safe to drink).")
 
 # -------------------------------
-# User Input
+# User Inputs
 # -------------------------------
-experience = st.number_input(
-    label="Years of Experience",
-    min_value=0.0,
-    max_value=50.0,
-    value=1.0,
-    step=0.1
-)
-
-# ----------------
-
+ph = st.number_input("pH value", min_value=0.0, max_value=14.0, value=7.0, step=0.1)
+Hardness = st.number_input("Hardness (mg/L)", min_value=0.0, max_value=500.0, value=150.0, step=1.0)
