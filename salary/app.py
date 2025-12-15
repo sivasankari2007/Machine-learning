@@ -5,7 +5,7 @@ import numpy as np
 # -------------------------------
 # Load the trained model
 # -------------------------------
-with open("", "rb") as file:
+with open("salary/salary_model.pkl", "rb") as file:
     model = pickle.load(file)
 
 # -------------------------------
@@ -26,3 +26,4 @@ if st.button("Predict Salary"):
     input_data = np.array([[experience]])
     predicted_salary = model.predict(input_data)[0]
     st.success(f"Estimated Salary: ₹ {predicted_salary:,.2f}")
+
