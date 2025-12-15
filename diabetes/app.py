@@ -5,7 +5,7 @@ import numpy as np
 # -------------------------------
 # Load the trained model
 # -------------------------------
-with open("diabetes/diabetes_model.pkl", "rb") as file:
+with open("", "rb") as file:
     model = pickle.load(file)
 
 # -------------------------------
@@ -28,10 +28,9 @@ plas = st.number_input("Plasma Glucose Concentration", min_value=0.0, max_value=
 if st.button("Predict"):
     input_data = np.array([[age, mass, insu, plas]])
     prediction = model.predict(input_data)[0]
-    probability = model.predict_proba(input_data)[0][prediction]
+    probability = model.predict_proba(input_data)[0][1]  # probability of class 1 (diabetes)
 
     if prediction == 1:
-        st.error(f"The model predicts diabetes with probability {probability:.2f}")
+        st.error(f"The model predicts DIABETES with probability {probability:.2f}")
     else:
-        st.success(f"The model predicts NO diabetes with probability {probability:.2f}")
-
+        st.success(f"The model predicts NO DIABETES with probability {1 - probability:.2f}")
