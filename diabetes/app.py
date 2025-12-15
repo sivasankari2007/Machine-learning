@@ -5,7 +5,7 @@ import numpy as np
 # -------------------------------
 # Load the trained model
 # -------------------------------
-with open("", "rb") as file:
+with open("diabetes/diabetes_model.pkl", "rb") as file:
     model = pickle.load(file)
 
 # -------------------------------
@@ -34,3 +34,4 @@ if st.button("Predict"):
         st.error(f"The model predicts DIABETES with probability {probability:.2f}")
     else:
         st.success(f"The model predicts NO DIABETES with probability {1 - probability:.2f}")
+
