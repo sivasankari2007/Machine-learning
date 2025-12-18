@@ -1,6 +1,5 @@
 import streamlit as st
 import numpy as np
-import pickle
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 from PIL import Image
@@ -9,12 +8,11 @@ IMG_SIZE = 224
 
 st.title("😊 Face Recognition App")
 
-# Load model
-model = load_model("FaceRecognition/face_recognition.h5")
+# ✅ Load CNN model
+model = load_model("face_recognition.h5")
 
-# Load class names
-with open("class_names.pkl", "rb") as f:
-    class_names = pickle.load(f)
+# ✅ Manually set class names (ORDER MUST MATCH TRAINING)
+class_names = ['prajan', 'sankari', 'sharan', 'stuart']
 
 uploaded_file = st.file_uploader(
     "Upload Face Image", type=["jpg", "png", "jpeg"]
