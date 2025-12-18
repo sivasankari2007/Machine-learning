@@ -9,7 +9,7 @@ IMG_SIZE = 224
 st.title("😊 Face Recognition App")
 
 # ✅ Load CNN model
-model = load_model("face_recognition.h5")
+model = load_model("FaceRecognition/face_recognition.h5")
 
 # ✅ Manually set class names (ORDER MUST MATCH TRAINING)
 class_names = ['prajan', 'sankari', 'sharan', 'stuart']
