@@ -9,7 +9,7 @@ st.write("Enter advertising budget to predict sales")
 # Load model
 @st.cache_resource
 def load_model():
-    with open("advertising_poly_model.pkl", "rb") as file:
+    with open("advertising/advertising_poly_model.pkl", "rb") as file:
         model = pickle.load(file)
     return model
 
@@ -26,3 +26,4 @@ if st.button("Predict Sales"):
     prediction = model.predict(input_data)
 
     st.success(f"📈 Predicted Sales: {prediction[0]:.2f}")
+
