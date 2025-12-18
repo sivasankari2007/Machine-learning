@@ -26,7 +26,7 @@ st.divider()
 
 @st.cache_resource
 def load_trained_model():
-    return load_model("Alzhmeir.h5")
+    return load_model("Alzhimer/alzheimer_model.h5")
 
 model = load_trained_model()
 
