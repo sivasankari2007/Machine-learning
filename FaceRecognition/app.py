@@ -10,7 +10,7 @@ IMG_SIZE = 224
 st.title("😊 Face Recognition App")
 
 # Load model
-model = load_model("face_recognition.h5")
+model = load_model("FaceRecognition/face_recognition.h5")
 
 # Load class names
 with open("class_names.pkl", "rb") as f:
