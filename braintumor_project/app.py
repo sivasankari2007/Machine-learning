@@ -10,7 +10,7 @@ st.title("🧠 Brain Tumor Detection App")
 st.write("Upload an MRI image to check whether a brain tumor is detected.")
 
 # Load trained model
-model = load_model("Brain_Tumor_Detection/brain_tumor_dataset.h5")
+model = load_model("braintumor_project/brain_tumor_dataset.h5")
 
 # Upload image
 uploaded_file = st.file_uploader("Upload MRI Image", type=["jpg", "jpeg", "png"])
