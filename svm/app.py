@@ -9,7 +9,7 @@ st.title("Student Performance Prediction App")
 with open('svm_model.pkl', 'rb') as f:
     model = pickle.load(f)
 
-with open('scaler.pkl', 'rb') as f:
+with open('svm/scaler.pkl', 'rb') as f:
     scaler = pickle.load(f)
 
 # User input
@@ -48,3 +48,4 @@ if st.button("Predict"):
         st.success(f"The student is likely to PASS ✅ (Probability: {probability:.2f})")
     else:
         st.error(f"The student is likely to FAIL ❌ (Probability: {probability:.2f})")
+
