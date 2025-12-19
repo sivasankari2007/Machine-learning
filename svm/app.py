@@ -6,10 +6,10 @@ import pickle
 st.title("Student Performance Prediction App")
 
 # Load model and scaler
-with open('svm/svm_model.pkl', 'rb') as f:
+with open('svm_model.pkl', 'rb') as f:
     model = pickle.load(f)
 
-with open('svm/scaler.pkl', 'rb') as f:
+with open('scaler.pkl', 'rb') as f:
     scaler = pickle.load(f)
 
 # User input
@@ -21,9 +21,11 @@ parent_edu = st.selectbox("Parental Level of Education", [
 ])
 lunch = st.selectbox("Lunch", ["standard", "free/reduced"])
 test_prep = st.selectbox("Test Preparation Course", ["none", "completed"])
-math_score = st.number_input("Math Score", 0, 100)
-reading_score = st.number_input("Reading Score", 0, 100)
-writing_score = st.number_input("Writing Score", 0, 100)
+
+# ✅ Use sliders for scores (easy to increase/decrease)
+math_score = st.slider("Math Score", min_value=0, max_value=100, value=50, step=1)
+reading_score = st.slider("Reading Score", min_value=0, max_value=100, value=50, step=1)
+writing_score = st.slider("Writing Score", min_value=0, max_value=100, value=50, step=1)
 
 # Map input to same encoding used in training
 gender_map = {"female":0, "male":1}
@@ -47,6 +49,4 @@ if st.button("Predict"):
     if prediction[0] == 1:
         st.success(f"The student is likely to PASS ✅ (Probability: {probability:.2f})")
     else:
-        st.error(f"The student is likely to FAIL ❌ (Probability: {probability:.2f})")
-
-
+        st.error(f"The stu
