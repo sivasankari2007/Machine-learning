@@ -14,7 +14,7 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 # Load model
-with open('naive_bayes_model.pkl', 'rb') as f:
+with open('naive/naive_bayes_model.pkl', 'rb') as f:
     model = pickle.load(f)
 
 # Sliders for easy value increase
@@ -50,6 +50,7 @@ if st.button("Predict"):
         st.success(f"PASS ✅ Probability: {prob:.2f}")
     else:
         st.error(f"FAIL ❌ Probability: {prob:.2f}")
+
 
 
 
