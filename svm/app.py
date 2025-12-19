@@ -49,6 +49,7 @@ if st.button("Predict"):
     if prediction[0] == 1:
         st.success(f"The student is likely to PASS ✅ (Probability: {probability:.2f})")
     else:
-        st.error(f"The stu
+        st.error(f"The student is likely to FAIL ❌ (Probability: {probability:.2f})")
+
 
 
