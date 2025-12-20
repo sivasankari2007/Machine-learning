@@ -13,7 +13,7 @@ st.set_page_config(layout="wide")
 # -----------------------------
 # Load model and scaler
 # -----------------------------
-model = load_model("mobile_addiction_cnn_model.h5")
+model = load_model("phone_addiction/mobile_addiction_cnn_model.h5")
 scaler = joblib.load("scaler.save")
 le_target = joblib.load("le_target.save")
 
