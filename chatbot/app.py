@@ -3,8 +3,8 @@ import pickle
 import random
 import numpy as np
 import requests
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.sequence import pad_sequences
+from keras.models import load_model
+from keras.preprocessing.sequence import pad_sequences
 
 # -----------------------------
 # PATHS
