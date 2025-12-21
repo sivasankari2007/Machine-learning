@@ -21,12 +21,15 @@ le_target = joblib.load("phone_addiction/le_target.pkl")
 # -----------------------------
 # Initialize MediaPipe
 # -----------------------------
-mp_face = mp.solutions.face_mesh.FaceMesh(
+
+mp_face_mesh = mp.solutions.face_mesh   # open the box
+face_mesh = mp_face_mesh.FaceMesh(      # take the machine
     static_image_mode=False,
     max_num_faces=1,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5
 )
+
 
 # -----------------------------
 # Initialize session state
