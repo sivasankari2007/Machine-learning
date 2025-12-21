@@ -1,204 +1,168 @@
 import streamlit as st
-import cv2
-import mediapipe as mp
 import numpy as np
-from tensorflow.keras.models import load_model
-import joblib
 import pandas as pd
+import joblib
 import time
 import requests
-
+from tensorflow.keras.models import load_model
 
 st.set_page_config(layout="wide")
 
-# -----------------------------
-# Load model and scaler
-# -----------------------------
-model = load_model("phone_addiction/mobile_addiction_cnn_model.h5")
-scaler = joblib.load("phone_addiction/scaler (1).pkl")
-le_target = joblib.load("phone_addiction/le_target.pkl")
+# ---------------------------------
+# Load ML model & encoders
+# ---------------------------------
+model = load_model("mobile_addiction_cnn_model.h5")
+scaler = joblib.load("scaler.pkl")
+le_target = joblib.load("le_target.pkl")
 
-# -----------------------------
-# Initialize MediaPipe
-# -----------------------------
-
-mp_face_mesh = mp.solutions.face_mesh   # open the box
-face_mesh = mp_face_mesh.FaceMesh(      # take the machine
-    static_image_mode=False,
-    max_num_faces=1,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5
-)
-
-
-# -----------------------------
-# Initialize session state
-# -----------------------------
+# ---------------------------------
+# Session state
+# ---------------------------------
 if "consent_given" not in st.session_state:
     st.session_state.consent_given = False
+
 if "risk_history" not in st.session_state:
     st.session_state.risk_history = []
 
-# -----------------------------
+# ---------------------------------
 # Sidebar Navigation
-# -----------------------------
+# ---------------------------------
 page = st.sidebar.selectbox(
     "Go to",
-    ["Home / Consent", "Live Detection", "Risk Dashboard", "Alerts", "Settings", "Live API Demo"]
+    [
+        "Home / Consent",
+        "Live Detection (Demo)",
+        "Risk Dashboard",
+        "Alerts",
+        "Live API Demo"
+    ]
 )
 
-# -----------------------------
-# Page 1: Home / Consent
-# -----------------------------
+# ---------------------------------
+# Utility: Risk calculation
+# ---------------------------------
+def calculate_risk(head_tilt, posture_score):
+    score = head_tilt * 0.4 + (1 - posture_score) * 50
+    if score < 20:
+        return "Low"
+    elif score < 40:
+        return "Medium"
+    else:
+        return "High"
+
+# =================================
+# PAGE 1: Home / Consent
+# =================================
 if page == "Home / Consent":
-    st.title("📱 Mobile Addiction Monitoring")
+    st.title("📱 Mobile Addiction Monitoring System")
+
     st.write("""
-        **Project Description:**  
-        Monitors mobile usage risk based on posture, eye focus, and usage metrics.
+    **Project Description (Simple):**  
+    This project detects mobile addiction risk using posture and usage behavior.
+    It uses a CNN model to classify risk levels.
     """)
-    consent = st.checkbox("I give consent for live monitoring")
+
+    consent = st.checkbox("I give consent for monitoring")
+
     if st.button("Start Monitoring"):
         if consent:
             st.session_state.consent_given = True
-            st.success("✅ Consent accepted. You can now go to Live Detection page.")
+            st.success("✅ Consent accepted. Go to Live Detection page.")
         else:
-            st.error("⚠️ Please give consent to proceed.")
+            st.error("❌ Please give consent to continue.")
 
-# -----------------------------
-# Page 2: Live Detection (Webcam + CNN)
-# -----------------------------
-elif page == "Live Detection":
+# =================================
+# PAGE 2: Live Detection (DEMO)
+# =================================
+elif page == "Live Detection (Demo)":
+
     if not st.session_state.consent_given:
-        st.warning("⚠️ Please give consent first on the Home page.")
+        st.warning("⚠️ Please give consent first.")
         st.stop()
 
-    st.title("📷 Live Detection")
-    frame_window = st.image([])
-    risk_text = st.empty()
-    metrics_text = st.empty()
+    st.title("📷 Live Detection (Demo Mode)")
 
-    cap = cv2.VideoCapture(0)
-    start_time = time.time()
+    st.info("""
+    Webcam & MediaPipe are **disabled on Streamlit Cloud**.
+    This page simulates live posture data for demonstration.
+    """)
 
-    def calculate_risk(head_tilt, posture_score):
-        score = head_tilt * 0.4 + (1 - posture_score) * 50
-        if score < 20:
-            return "Low", round(score,2)
-        elif score < 40:
-            return "Medium", round(score,2)
-        else:
-            return "High", round(score,2)
+    if st.button("Simulate Live Frame"):
+        # Fake posture values (demo)
+        head_tilt = np.random.randint(5, 60)
+        posture_score = round(np.random.uniform(0.3, 0.9), 2)
+        eye_focus = np.random.choice([0, 1, 2])
 
-    stop_button = st.button("Stop Live Detection")
+        X = np.array([[head_tilt, posture_score, eye_focus]])
+        X_scaled = scaler.transform(X)
 
-    while True:
-        ret, frame = cap.read()
-        if not ret or stop_button:
-            break
+        pred = model.predict(X_scaled)
+        risk = le_target.inverse_transform([np.argmax(pred)])[0]
 
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = mp_face.process(rgb)
+        st.session_state.risk_history.append({
+            "time": time.strftime("%H:%M:%S"),
+            "risk": risk,
+            "posture_score": posture_score
+        })
 
-        head_tilt = 0
-        eye_focus = 1  # 0: up, 1: center, 2: down
-        posture_score = 0.5
+        st.write("Head Tilt:", head_tilt)
+        st.write("Posture Score:", posture_score)
+        st.subheader(f"📊 Risk Level: {risk}")
 
-        if results.multi_face_landmarks:
-            face = results.multi_face_landmarks[0]
-            nose = face.landmark[1]
-            chin = face.landmark[152]
-
-            head_tilt = abs(nose.y - chin.y) * 100
-            posture_score = round(1 - min(head_tilt / 100,1),2)
-            eye_focus = 2 if nose.y > 0.55 else 0 if nose.y < 0.45 else 1
-
-            # Draw landmarks
-            for lm in face.landmark:
-                x = int(lm.x * frame.shape[1])
-                y = int(lm.y * frame.shape[0])
-                cv2.circle(frame, (x,y), 1, (0,255,0), -1)
-
-        # Predict risk using CNN
-        X_input = np.array([[head_tilt, posture_score, eye_focus]])
-        X_input_scaled = scaler.transform(X_input)
-        pred = model.predict(X_input_scaled)
-        pred_class = le_target.inverse_transform([np.argmax(pred)])[0]
-
-        # Store history
-        st.session_state.risk_history.append({"time": time.time()-start_time, "risk": pred_class, "posture_score": posture_score})
-
-        # Update display
-        frame_window.image(frame, channels="BGR")
-        metrics_text.write(f"Head Tilt: {head_tilt:.2f}, Posture Score: {posture_score}, Eye Focus: {eye_focus}")
-        risk_text.subheader(f"Current Risk Level: {pred_class}")
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-# -----------------------------
-# Page 3: Risk Dashboard
-# -----------------------------
+# =================================
+# PAGE 3: Risk Dashboard
+# =================================
 elif page == "Risk Dashboard":
     st.title("📊 Risk Dashboard")
+
     if not st.session_state.risk_history:
-        st.info("No data yet. Run Live Detection first.")
+        st.info("No data available yet.")
     else:
         df = pd.DataFrame(st.session_state.risk_history)
-        df['time_sec'] = df['time']
 
-        st.subheader("Line Chart: Risk vs Time")
-        st.line_chart(df['posture_score'].values)
+        st.subheader("Risk Count")
+        st.bar_chart(df["risk"].value_counts())
 
-        st.subheader("Bar Chart: Daily Risk Count")
-        st.bar_chart(df['risk'].value_counts())
+        st.subheader("Average Posture Score")
+        st.write(df["posture_score"].mean())
 
-        st.write("Average Posture Score:", df['posture_score'].mean())
-        st.write("Recommendations:")
-        st.write("- Take breaks if High risk appears frequently.")
-        st.write("- Maintain upright posture.")
+        st.subheader("History Table")
+        st.dataframe(df)
 
-# -----------------------------
-# Page 4: Alerts
-# -----------------------------
+# =================================
+# PAGE 4: Alerts
+# =================================
 elif page == "Alerts":
-    st.title("⚠️ Alerts Page")
+    st.title("⚠️ Alerts")
+
     if not st.session_state.risk_history:
-        st.info("No alerts yet. Run Live Detection first.")
+        st.info("No alerts yet.")
     else:
         df = pd.DataFrame(st.session_state.risk_history)
-        high_risk_df = df[df['risk']=="High"]
-        st.write("High Risk Log:")
-        st.dataframe(high_risk_df)
-        if not high_risk_df.empty:
-            st.warning("⚠️ High risk detected! Take a break!")
+        high_risk = df[df["risk"] == "High"]
 
-# -----------------------------
-# Page 5: Settings
-# -----------------------------
-elif page == "Settings":
-    st.title("⚙️ Settings")
-    st.write("Adjust sensitivity, risk thresholds, or reset data.")
-    reset = st.button("Reset Risk History")
-    if reset:
-        st.session_state.risk_history = []
-        st.success("✅ Risk history cleared.")
+        if high_risk.empty:
+            st.success("No high-risk alerts 🎉")
+        else:
+            st.error("⚠️ High Risk Detected!")
+            st.dataframe(high_risk)
 
-# -----------------------------
-# Page 6: Live API Demo
-# -----------------------------
+# =================================
+# PAGE 5: Live API Demo
+# =================================
 elif page == "Live API Demo":
     st.title("🌐 Free Live API Demo")
-    st.write("This uses a free public API as a placeholder for live data.")
+
+    st.write("Using a free public API (for academic demo).")
 
     if st.button("Fetch Live API Data"):
         try:
-            response = requests.get("https://api.publicapis.org/entries")  # Free placeholder API
-            if response.status_code == 200:
-                st.success("✅ API connected successfully")
-                # Display 3 entries as demo
-                entries = response.json()['entries'][:3]
-                st.json(entries)
+            r = requests.get("https://api.publicapis.org/entries", timeout=5)
+            if r.status_code == 200:
+                data = r.json()["entries"][:3]
+                st.success("API Connected Successfully")
+                st.json(data)
             else:
                 st.error("API request failed")
         except Exception as e:
-            st.error(f"API error: {e}")
+            st.error(f"API Error: {e}")
