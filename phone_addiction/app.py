@@ -11,9 +11,9 @@ st.set_page_config(layout="wide")
 # ---------------------------------
 # Load ML model & encoders
 # ---------------------------------
-model = load_model("mobile_addiction_cnn_model.h5")
-scaler = joblib.load("scaler.pkl")
-le_target = joblib.load("le_target.pkl")
+model = load_model("")
+scaler = joblib.load("phone_addiction/scaler (1).pkl")
+le_target = joblib.load("")
 
 # ---------------------------------
 # Session state
