@@ -11,7 +11,7 @@ st.set_page_config(page_title="Mobile Addiction Monitor", layout="wide")
 # ==================================================
 # Load Model & Preprocessing Objects
 # ==================================================
-model = load_model("")
+model = load_model("phone_addiction/mobile_addiction_cnn_model.h5")
 scaler = joblib.load("phone_addiction/scaler (1).pkl")
 le_target = joblib.load("")
 
