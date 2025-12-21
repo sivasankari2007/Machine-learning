@@ -8,6 +8,7 @@ import pandas as pd
 import time
 import requests
 
+
 st.set_page_config(layout="wide")
 
 # -----------------------------
