@@ -18,7 +18,7 @@ MAX_LEN = 10   # SAME as training
 # -----------------------------
 model = load_model(os.path.join(MODEL_DIR, "chatbot/chatbot_rnn_model.h5"))
 
-with open(os.path.join(MODEL_DIR, "tokenizer.pkl"), "rb") as f:
+with open(os.path.join(MODEL_DIR, "chatbot/tokenizer.pkl"), "rb") as f:
     tokenizer = pickle.load(f)
 
 # SAME ORDER USED IN TRAINING
