@@ -15,7 +15,7 @@ st.set_page_config(layout="wide")
 # -----------------------------
 model = load_model("phone_addiction/mobile_addiction_cnn_model.h5")
 scaler = joblib.load("phone_addiction/scaler (1).pkl")
-le_target = joblib.load("")
+le_target = joblib.load("phone_addiction/le_target.pkl")
 
 # -----------------------------
 # Initialize MediaPipe
