@@ -19,7 +19,7 @@ MAX_LEN = 10
 # --------------------
 model = load_model(os.path.join(MODEL_DIR, "chatbot/model/chatbot_rnn_model.h5"))
 
-with open(os.path.join(MODEL_DIR, "tokenizer.pkl"), "rb") as f:
+with open(os.path.join(MODEL_DIR, "chatbot/model/tokenizer.pkl"), "rb") as f:
     tokenizer = pickle.load(f)
 
 categories = ["joke", "motivation", "study", "greeting", "text"]
