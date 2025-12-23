@@ -1,0 +1,251 @@
+user: Hi!
+bot: Hello! How are you today?
+
+user: Good morning!
+bot: Good morning! Did you sleep well?
+
+user: Good afternoon!
+bot: Good afternoon! How’s your day going so far?
+
+user: Good evening!
+bot: Good evening! How was your day?
+
+user: Good night!
+bot: Good night! Sleep well and sweet dreams.
+
+user: Hey there!
+bot: Hi! How’s it going?
+
+user: Hello!
+bot: Hello! Nice to see you.
+
+user: How are you?
+bot: I’m good, thank you! How about you?
+
+user: I’m fine, thanks.
+bot: Glad to hear that!
+
+user: How’s your day?
+bot: It’s going well! How about yours?
+
+user: How have you been?
+bot: I’ve been great! How about you?
+
+user: Long time no see!
+bot: Yes! It’s been a while. How are things?
+
+user: Nice to meet you!
+bot: Nice to meet you too!
+
+user: Hi there, friend!
+bot: Hi! How’s your day going?
+
+user: Morning!
+bot: Morning! Ready for a great day?
+
+user: Afternoon!
+bot: Good afternoon! How’s everything?
+
+user: Evening!
+bot: Good evening! Did you have a good day?
+
+user: Night!
+bot: Good night! Rest well.
+
+user: Hello there!
+bot: Hi! How are you feeling today?
+
+user: Hey!
+bot: Hey! What’s up?
+
+user: How’s it going?
+bot: It’s going well! How about you?
+
+user: How’s life?
+bot: Life’s good! How about yours?
+
+user: What’s up?
+bot: Not much! How about you?
+
+user: How’s your morning?
+bot: My morning’s great! How’s yours?
+
+user: How’s your afternoon?
+bot: It’s going well! How’s your day so far?
+
+user: How’s your evening?
+bot: My evening’s relaxing! How about you?
+
+user: Sleep well?
+bot: Yes! Thanks for asking. Did you sleep well too?
+
+user: Ready for the day?
+bot: Yes! Are you ready too?
+
+user: How’s your weekend?
+bot: It’s been nice! How about yours?
+
+user: Happy Monday!
+bot: Happy Monday! Hope your week starts well.
+
+user: Happy Friday!
+bot: Happy Friday! Any plans for the weekend?
+
+user: Have a good day!
+bot: Thanks! You too!
+
+user: Have a nice weekend!
+bot: Thank you! Enjoy your weekend as well.
+
+user: Good to see you!
+bot: Good to see you too! How’s everything?
+
+user: Hi, buddy!
+bot: Hi! How’s it going?
+
+user: How are you doing?
+bot: I’m doing well! How about yourself?
+
+user: Hello! How’s it going?
+bot: Everything’s good! How’s your day?
+
+user: Hey! How’s life treating you?
+bot: It’s treating me well! And you?
+
+user: Morning! Did you sleep well?
+bot: Yes, thank you! Did you?
+
+user: Afternoon! Feeling good?
+bot: Yes, feeling great! How about you?
+
+user: Evening! Any plans tonight?
+bot: Just relaxing. How about you?
+
+user: Night! Time to sleep?
+bot: Yes! Sweet dreams to you.
+
+user: Hi! How’s everything?
+bot: Everything’s good! How about your day?
+
+user: Hello! What’s new?
+bot: Not much! How about you?
+
+user: Hey! Long time!
+bot: Yes! It’s great to see you again.
+
+user: Hi there! How’s it going?
+bot: Going well! How about you?
+
+user: Morning! Ready for work?
+bot: Yes! Hope you’re ready too.
+
+user: Good afternoon! How’s your day?
+bot: It’s going well! How’s yours?
+
+user: Good evening! Relaxing?
+bot: Yes, it’s peaceful. How about you?
+
+user: Good night! Sleep tight.
+bot: Thank you! You too!
+
+user: Hello! Feeling good today?
+bot: Yes, feeling great! And you?
+
+user: Hey! What’s up?
+bot: Not much! How about you?
+
+user: Morning! How did you sleep?
+bot: Very well! Did you sleep well?
+
+user: Afternoon! Busy day?
+bot: Somewhat! How about yours?
+
+user: Evening! How was your day?
+bot: It was good! How about yours?
+
+user: Night! Any late-night plans?
+bot: Just relaxing. What about you?
+
+user: Hi! How’s your mood today?
+bot: Feeling happy! How about you?
+
+user: Hello! How’s everything going?
+bot: Everything’s going well! And yours?
+
+user: Hey! Feeling energetic?
+bot: Yes! How about you?
+
+user: Morning! Coffee time?
+bot: Yes, definitely! How about you?
+
+user: Afternoon! How’s lunch?
+bot: It was good! Did you have lunch?
+
+user: Evening! How’s your family?
+bot: They’re doing well! How about yours?
+
+user: Night! Sweet dreams.
+bot: Thank you! Sleep well too.
+
+user: Hi! How’s the weather there?
+bot: It’s sunny! How about at your place?
+
+user: Hello! How’s your day treating you?
+bot: It’s going well! And yours?
+
+user: Hey! Ready for today?
+bot: Yes! Hope you’re ready too.
+
+user: Morning! Feeling positive?
+bot: Absolutely! How about you?
+
+user: Afternoon! Staying productive?
+bot: Yes! How about you?
+
+user: Evening! How was your work today?
+bot: It went well! How about yours?
+
+user: Night! Time to relax?
+bot: Yes! Have a peaceful night.
+
+user: Hi! How’s everything going so far?
+bot: Everything’s great! How’s your day?
+
+user: Hello! Any plans for today?
+bot: Just some work and relaxation. What about you?
+
+user: Hey! Hope you’re doing well.
+bot: Thank you! I’m doing well. How about you?
+
+user: Morning! Ready to start the day?
+bot: Yes! Let’s make it a productive day.
+
+user: Afternoon! Did you have a good lunch?
+bot: Yes! How about yours?
+
+user: Evening! Any exciting plans tonight?
+bot: Just relaxing at home. How about you?
+
+user: Night! Hope you had a good day.
+bot: Thank you! I hope you did too.
+
+user: Hi! How’s your energy today?
+bot: Feeling energized! How about you?
+
+user: Hello! How’s your mood today?
+bot: Happy and positive! How about yours?
+
+user: Hey! Ready for the weekend?
+bot: Yes! Excited to relax. How about you?
+
+user: Morning! How was your sleep?
+bot: Very good! How about yours?
+
+user: Afternoon! Staying focused?
+bot: Yes! How about you?
+
+user: Evening! Feeling relaxed?
+bot: Yes, it’s a calm evening. How about you?
+
+user: Night! Time to rest?
+bot: Yes! Have a good sleep.
