@@ -11,7 +11,7 @@ st.set_page_config(page_title="Multi-Intent Chatbot", page_icon="🤖")
 @st.cache_resource
 def load_model_assets():
     model = tf.keras.models.load_model('chatbot/model/chatbot_rnn_model.h5')
-    with open('model/tokenizer.pkl', 'rb') as f:
+    with open('chatbot/model/tokenizer.pkl', 'rb') as f:
         tokenizer = pickle.load(f)
     return model, tokenizer
 
