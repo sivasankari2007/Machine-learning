@@ -32,11 +32,11 @@ def load_text(filename):
         return [line.strip() for line in f if line.strip()]
 
 responses = {
-    "joke": load_text("chatbot/data/greetings.txt"),
-    "motivation": load_text("chatbot/data-20251221T130125Z-1-001/data/motivation.txt"),
-    "study": load_text("chatbot/data-20251221T130125Z-1-001/data/studytips.txt"),
-    "greeting": load_text("chatbot/data-20251221T130125Z-1-001/data/greetings.txt"),
-    "text": load_text("chatbot/data-20251221T130125Z-1-001/data/text.txt")
+    "joke": load_text("chatbot/data/joke.txt"),
+    "motivation": load_text(""),
+    "study": load_text(""),
+    "greeting": load_text("chatbot/data/greetings.txt"),
+    "text": load_text("")
 }
 
 # --------------------
