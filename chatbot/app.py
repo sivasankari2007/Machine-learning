@@ -33,7 +33,7 @@ def load_text(filename):
 
 responses = {
     "joke": load_text("chatbot/data/joke.txt"),
-    "motivation": load_text(""),
+    "motivation": load_text("chatbot/data/motivation.txt"),
     "study": load_text(""),
     "greeting": load_text("chatbot/data/greetings.txt"),
     "text": load_text("")
