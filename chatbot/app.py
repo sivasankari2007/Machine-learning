@@ -9,16 +9,16 @@ from keras.preprocessing.sequence import pad_sequences
 # --------------------
 # FOLDERS
 # --------------------
-MODEL_DIR = "model"
+
 DATA_DIR = "data"
 MAX_LEN = 10
 
 # --------------------
 # LOAD MODEL
 # --------------------
-model = load_model(os.path.join(MODEL_DIR, "chatbot/chatbot_rnn_model.h5"))
+model = load_model(os.path.join( "chatbot/chatbot_rnn_model.h5"))
 
-with open(os.path.join(MODEL_DIR, "chatbot/tokenizer.pkl"), "rb") as f:
+with open(os.path.join( "chatbot/tokenizer.pkl"), "rb") as f:
     tokenizer = pickle.load(f)
 
 # SAME ORDER AS TRAINING
