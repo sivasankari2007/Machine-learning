@@ -20,7 +20,7 @@ model, tokenizer = load_model_assets()
 # Function to get a random line from your text files as a response
 def get_random_response(category):
     try:
-        with open(f"data/{category}.txt", 'r', encoding='utf-8') as f:
+        with open(f"chatbot/data/greetings.txt", 'r', encoding='utf-8') as f:
             lines = f.readlines()
             return random.choice(lines).strip()
     except:
