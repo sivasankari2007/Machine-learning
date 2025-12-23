@@ -36,7 +36,7 @@ responses = {
     "motivation": load_text("chatbot/data-20251221T130125Z-1-001/data/motivation.txt"),
     "study": load_text("chatbot/data-20251221T130125Z-1-001/data/studytips.txt"),
     "greeting": load_text("chatbot/data-20251221T130125Z-1-001/data/greetings.txt"),
-    "text": load_text("")
+    "text": load_text("chatbot/data-20251221T130125Z-1-001/data/text.txt")
 }
 
 # --------------------
