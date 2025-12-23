@@ -4,93 +4,86 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 import pickle
 import numpy as np
 import random
+import os
 
-# --- PAGE CONFIG & GOOGLE COLORS ---
-st.set_page_config(page_title="Google AI Assistant", page_icon="🔍", layout="centered")
+# --- GOOGLE THEME SETUP ---
+st.set_page_config(page_title="Google Chatbot", page_icon="🔍")
 
-# Custom CSS for Google Theme
 st.markdown("""
     <style>
-    .stApp {
-        background-color: #FFFFFF;
-    }
-    .main-header {
-        font-family: 'Product Sans', Arial, sans-serif;
-        color: #4285F4;
-        font-size: 48px;
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 0px;
-    }
-    .google-span { display: inline-block; }
-    .g-blue { color: #4285F4; }
-    .g-red { color: #EA4335; }
-    .g-yellow { color: #FBBC05; }
-    .g-green { color: #34A853; }
-    
-    /* Styling chat bubbles */
-    .stChatMessage {
-        border-radius: 20px;
-        padding: 10px;
-        margin-bottom: 10px;
-    }
+    .main-header { font-family: 'Product Sans', sans-serif; text-align: center; }
+    .g-blue { color: #4285F4; font-size: 50px; font-weight: bold; }
+    .g-red { color: #EA4335; font-size: 50px; font-weight: bold; }
+    .g-yellow { color: #FBBC05; font-size: 50px; font-weight: bold; }
+    .g-green { color: #34A853; font-size: 50px; font-weight: bold; }
+    .sub-text { color: #5f6368; font-size: 20px; text-align: center; margin-top: -20px; }
     </style>
-    """, unsafe_allow_html=True)
-
-# --- GOOGLE LOGO HEADER ---
-st.markdown("""
     <div class='main-header'>
         <span class='g-blue'>G</span><span class='g-red'>o</span><span class='g-yellow'>o</span><span class='g-blue'>g</span><span class='g-green'>l</span><span class='g-red'>e</span>
-        <span style='color:#5f6368; font-size: 24px;'>Chatbot</span>
+        <span style='color: #5f6368; font-size: 40px;'>Chatbot</span>
     </div>
+    <div class='sub-text'>RNN Machine Learning Project</div>
     """, unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #5f6368;'>RNN Machine Learning Project</p>", unsafe_allow_html=True)
 
-# --- LOAD ASSETS ---
+# --- CORRECT FILE PATHING ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, 'model', 'chatbot_rnn_model.h5')
+TOKEN_PATH = os.path.join(BASE_DIR, 'model', 'tokenizer.pkl')
+
 @st.cache_resource
 def load_assets():
-    model = tf.keras.models.load_model('model/chatbot_rnn_model.h5')
-    with open('model/tokenizer.pkl', 'rb') as f:
+    if not os.path.exists(MODEL_PATH) or not os.path.exists(TOKEN_PATH):
+        return None, None
+    model = tf.keras.models.load_model(MODEL_PATH)
+    with open(TOKEN_PATH, 'rb') as f:
         tokenizer = pickle.load(f)
     return model, tokenizer
 
-try:
-    model, tokenizer = load_assets()
-except Exception as e:
-    st.error("Model files not found. Please run train.py first!")
+model, tokenizer = load_assets()
 
-def get_bot_response(intent_idx):
+# --- ERROR HANDLING ---
+if model is None:
+    st.error("⚠️ Model files not found! Ensure the 'model' folder contains 'chatbot_rnn_model.h5' and 'tokenizer.pkl'.")
+    st.stop()
+
+def get_response(idx):
+    # Match this EXACTLY to your training labels
     mapping = {0: "greetings", 1: "joke", 2: "motivation", 3: "normaltext"}
-    filename = mapping.get(intent_idx)
+    file_name = mapping.get(idx, "normaltext")
+    path = os.path.join(BASE_DIR, 'data', f"{file_name}.txt")
+    
     try:
-        with open(f"data/{filename}.txt", 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-            return random.choice(lines).strip()
+        with open(path, 'r', encoding='utf-8') as f:
+            lines = [line.strip() for line in f.readlines() if line.strip()]
+            return random.choice(lines)
     except:
-        return "I'm searching for the best answer for you..."
+        return "I'm sorry, I couldn't find my response data."
 
-# --- CHAT INTERFACE ---
+# --- CHAT LOGIC ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 for msg in st.session_state.messages:
-    avatar = "👤" if msg["role"] == "user" else "🤖"
-    with st.chat_message(msg["role"], avatar=avatar):
-        st.write(msg["content"])
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-if prompt := st.chat_input("Search or ask anything..."):
+if prompt := st.chat_input("Ask me anything..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user", avatar="👤"):
-        st.write(prompt)
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-    # Prediction
+    # Preprocessing & Prediction
     seq = tokenizer.texts_to_sequences([prompt.lower()])
     padded = pad_sequences(seq, maxlen=20, padding='post')
-    prediction = model.predict(padded)
-    idx = np.argmax(prediction)
+    pred = model.predict(padded)
     
-    response = get_bot_response(idx)
+    # Check if the model is just guessing (bias check)
+    if np.max(pred) < 0.3: # If confidence is low, use normaltext
+        response = get_response(3)
+    else:
+        idx = np.argmax(pred)
+        response = get_response(idx)
 
-    with st.chat_message("assistant", avatar="🤖"):
-        st.info(response) # Blue-ish box for response
+    with st.chat_message("assistant"):
+        st.write(response)
     st.session_state.messages.append({"role": "assistant", "content": response})
