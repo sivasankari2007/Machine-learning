@@ -32,7 +32,7 @@ def load_text(filename):
         return f.read().splitlines()
 
 data_files = {
-    "joke": load_text("joke.txt"),
+    "joke": load_text("chatbot/data/joke.txt"),
     "motivation": load_text("motivation.txt"),
     "study": load_text("studytips.txt"),
     "greeting": load_text("chatbot/data/greetings.txt"),
