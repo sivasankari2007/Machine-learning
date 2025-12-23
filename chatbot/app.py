@@ -17,7 +17,7 @@ MAX_LEN = 10
 # --------------------
 # Load model
 # --------------------
-model = load_model(os.path.join(MODEL_DIR, "chatbot_rnn_model.h5"))
+model = load_model(os.path.join(MODEL_DIR, ""))
 
 with open(os.path.join(MODEL_DIR, "tokenizer.pkl"), "rb") as f:
     tokenizer = pickle.load(f)
