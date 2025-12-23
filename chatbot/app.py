@@ -34,7 +34,7 @@ def load_text(filename):
 data_files = {
     "joke": load_text("chatbot/data/joke.txt"),
     "motivation": load_text("chatbot/data/motivation.txt"),
-    "study": load_text("studytips.txt"),
+    "study": load_text("chatbot/data/studytips.txt"),
     "greeting": load_text("chatbot/data/greetings.txt"),
     "text": load_text("text.txt")
 }
