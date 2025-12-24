@@ -8,7 +8,7 @@ import tensorflow as tf
 
 # Load resources
 lemmatizer = WordNetLemmatizer()
-model = tf.keras.models.load_model('chatbot_model.h5')
+model = tf.keras.models.load_model('chatbot/chatbot_model.h5')
 intents = json.loads(open('intents.json').read())
 
 # These must match exactly what you used in your train.py
