@@ -15,7 +15,7 @@ def load_all_resources():
     nltk.download('wordnet')
     
     # Load the Model
-    model = tf.keras.models.load_model('chatbot_model.h5')
+    model = tf.keras.models.load_model('chatbot/chatbot_model.h5')
     
     # Load Intents
     with open('intents.json', 'r') as f:
