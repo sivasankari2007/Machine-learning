@@ -29,8 +29,8 @@ else:
     st.stop()
 
 # Load trained model
-if os.path.exists('chatbot_model.h5'):
-    model = tf.keras.models.load_model('chatbot_model.h5')
+if os.path.exists('chatbot/chatbot_model.h5'):
+    model = tf.keras.models.load_model('chatbot/chatbot_model.h5')
 else:
     st.error("Error: 'chatbot_model.h5' not found. Run your training script first.")
     st.stop()
