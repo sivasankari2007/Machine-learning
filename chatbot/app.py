@@ -21,7 +21,7 @@ lemmatizer = WordNetLemmatizer()
 
 # --- 2. LOAD DATA ---
 model = tf.keras.models.load_model('chatbot/chatbot_model.h5')
-with open('intents.json', 'r') as f:
+with open('chatbot/intents.json', 'r') as f:
     intents = json.load(f)
 
 # Recreate vocabulary from intents.json
