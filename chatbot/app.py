@@ -23,7 +23,7 @@ lemmatizer = WordNetLemmatizer()
 @st.cache_resource
 def load_chatbot_files():
     # Verify files exist before loading
-    files = ['chatbot_model.h5', 'intents.json', 'chatbot/data.json']
+    files = ['chatbot_model.h5', 'chatbot/intents.json', 'chatbot/data.json']
     for f in files:
         if not os.path.exists(f):
             st.error(f"⚠️ Critical file missing: {f}. Please run train.py and upload it.")
