@@ -17,7 +17,7 @@ headers = {
 # Load model and tools
 model = load_model("chatbot/chatbot_rnn_model.h5")
 
-with open("", "rb") as f:
+with open("chatbot/tokenizer.pkl", "rb") as f:
     tokenizer = pickle.load(f)
 
 with open("chatbot/label_encoder (1).pkl", "rb") as f:
