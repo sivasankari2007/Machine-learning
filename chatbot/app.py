@@ -6,101 +6,114 @@ import json
 import random
 import tensorflow as tf
 import os
+from datetime import datetime
+import urllib.parse
 
-# --- 1. MANDATORY NLTK DOWNLOADS ---
-# This prevents the LookupError on Streamlit Cloud
+# --- 1. INITIAL SETUP ---
 @st.cache_resource
-def download_nltk_resources():
-    resources = ['punkt', 'punkt_tab', 'wordnet', 'omw-1.4']
-    for res in resources:
-        nltk.download(res)
+def download_nltk_data():
+    nltk.download('punkt')
+    nltk.download('punkt_tab')
+    nltk.download('wordnet')
 
-download_nltk_resources()
-
-# --- 2. LOAD MODEL AND DATA ---
+download_nltk_data()
 lemmatizer = WordNetLemmatizer()
 
-# Load intents file
-if os.path.exists('chatbot/intents.json'):
-    with open('chatbot/intents.json', 'r') as f:
+# --- 2. LOAD AI RESOURCES ---
+@st.cache_resource
+def load_chatbot_files():
+    # Verify files exist before loading
+    files = ['chatbot_model.h5', 'intents.json', 'data.json']
+    for f in files:
+        if not os.path.exists(f):
+            st.error(f"⚠️ Critical file missing: {f}. Please run train.py and upload it.")
+            st.stop()
+
+    model = tf.keras.models.load_model('chatbot_model.h5')
+    
+    with open('intents.json', 'r') as f:
         intents = json.load(f)
-else:
-    st.error("Error: 'intents.json' not found. Please upload it to your repository.")
-    st.stop()
+        
+    with open('data.json', 'r') as f:
+        data = json.load(f)
+        words = data['words']
+        classes = data['classes']
+        
+    return model, intents, words, classes
 
-# Load trained model
-if os.path.exists('chatbot/chatbot_model.h5'):
-    model = tf.keras.models.load_model('chatbot/chatbot_model.h5')
-else:
-    st.error("Error: 'chatbot_model.h5' not found. Run your training script first.")
-    st.stop()
+model, intents, words, classes = load_chatbot_files()
 
-# Recreate words and classes lists (Exactly as done in train.py)
-words = []
-classes = []
-ignore_letters = ['!', '?', ',', '.']
-
-for intent in intents['intents']:
-    if intent['tag'] not in classes:
-        classes.append(intent['tag'])
-    for pattern in intent['patterns']:
-        word_list = nltk.word_tokenize(pattern)
-        words.extend(word_list)
-
-words = sorted(list(set([lemmatizer.lemmatize(w.lower()) for w in words if w not in ignore_letters])))
-classes = sorted(list(set(classes)))
-
-# --- 3. HELPER FUNCTIONS ---
+# --- 3. CORE LOGIC ---
 def clean_up_sentence(sentence):
     sentence_words = nltk.word_tokenize(sentence)
-    return [lemmatizer.lemmatize(word.lower()) for word in sentence_words]
+    return [lemmatizer.lemmatize(w.lower()) for w in sentence_words]
 
 def bow(sentence, words):
     sentence_words = clean_up_sentence(sentence)
+    # The fix for ValueError: Ensure bag is EXACTLY the same length as training words
     bag = [0] * len(words)
     for s in sentence_words:
         for i, w in enumerate(words):
-            if w == s:
-                bag[i] = 1
+            if w == s: bag[i] = 1
     return np.array(bag)
 
 def get_response(user_input):
     p = bow(user_input, words)
-    res = model.predict(np.array([p]), verbose=0)[0] # verbose=0 hides logs
-    ERROR_THRESHOLD = 0.25
-    results = [[i, r] for i, r in enumerate(res) if r > ERROR_THRESHOLD]
-    results.sort(key=lambda x: x[1], reverse=True)
-    
-    if len(results) > 0:
-        tag = classes[results[0][0]]
+    # Predicting with the model
+    res = model.predict(np.array([p]), verbose=0)[0]
+    results_index = np.argmax(res)
+    tag = classes[results_index]
+    confidence = res[results_index]
+
+    if confidence > 0.5:
+        # TOOL: Current Time
+        if tag == "time":
+            return f"🕒 The current time is {datetime.now().strftime('%H:%M:%S')}", None
+        
+        # TOOL: Image Generation (Pollinations API)
+        if tag == "generate_image":
+            prompt = user_input.lower()
+            for trigger in ["draw a", "generate an image of", "create a picture of"]:
+                prompt = prompt.replace(trigger, "")
+            img_url = f"https://image.pollinations.ai/prompt/{urllib.parse.quote(prompt.strip())}?nologo=true"
+            return "🎨 Here is what I created for you:", img_url
+
+        # TOOL: Jokes / General QA
         for i in intents['intents']:
             if i['tag'] == tag:
-                return random.choice(i['responses'])
-    
-    return "I'm sorry, I don't quite understand that."
+                return random.choice(i['responses']), None
+
+    return "I'm not quite sure. Try asking for a joke or to draw something!", None
 
 # --- 4. STREAMLIT UI ---
-st.set_page_config(page_title="RNN Chatbot", page_icon="🤖")
-st.title("🤖 AI Chatbot")
-st.caption("Powered by RNN (LSTM) and Streamlit")
+st.set_page_config(page_title="AI Multi-Bot", page_icon="🤖")
+st.title("🤖 RNN Multi-Tool Chatbot")
 
-# Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display chat history
+# Show chat history
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+        if message.get("image"):
+            st.image(message["image"])
 
-# User input
-if prompt := st.chat_input("Say something..."):
-    # Show user message
-    st.chat_message("user").markdown(prompt)
+# Input handling
+if prompt := st.chat_input("Say hi, ask for a joke, or say 'Draw a space cat'"):
     st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-    # Generate and show bot response
-    response = get_response(prompt)
+    response_text, image_url = get_response(prompt)
+
     with st.chat_message("assistant"):
-        st.markdown(response)
-    st.session_state.messages.append({"role": "assistant", "content": response})
+        st.markdown(response_text)
+        if image_url:
+            st.image(image_url)
+
+    st.session_state.messages.append({
+        "role": "assistant", 
+        "content": response_text, 
+        "image": image_url
+    })
