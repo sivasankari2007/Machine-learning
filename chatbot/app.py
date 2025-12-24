@@ -21,8 +21,8 @@ download_nltk_resources()
 lemmatizer = WordNetLemmatizer()
 
 # Load intents file
-if os.path.exists('intents.json'):
-    with open('intents.json', 'r') as f:
+if os.path.exists('chatbot/intents.json'):
+    with open('chatbot/intents.json', 'r') as f:
         intents = json.load(f)
 else:
     st.error("Error: 'intents.json' not found. Please upload it to your repository.")
