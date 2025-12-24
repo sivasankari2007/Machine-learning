@@ -14,10 +14,17 @@
                 "Good to see you again!",
                 "Hi there, how can I help?"
             ],
+    
             "context": [
                 ""
             ]
-        },
+        },"tag": "jokes",
+            "patterns": ["Tell me a joke", "Say something funny", "Do you know any jokes?"],
+            "responses": [
+              "Why did the computer go to the doctor? Because it had a virus!",
+        "Why do programmers prefer dark mode? Because light attracts bugs.",
+        "How many tickles does it take to make an octopus laugh? Ten-tickles!"
+      ],
         {
             "tag": "goodbye",
             "patterns": [
