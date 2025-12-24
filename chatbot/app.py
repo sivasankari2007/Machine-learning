@@ -3,65 +3,104 @@ import nltk
 from nltk.stem import WordNetLemmatizer
 import numpy as np
 import json
+import random
 import tensorflow as tf
 import os
-import urllib.parse
 
-# --- SETUP ---
+# --- 1. MANDATORY NLTK DOWNLOADS ---
+# This prevents the LookupError on Streamlit Cloud
 @st.cache_resource
-def load_all_resources():
-    nltk.download('punkt')
-    nltk.download('punkt_tab')
-    nltk.download('wordnet')
-    
-    # Load the Model
-    model = tf.keras.models.load_model('chatbot/chatbot_model.h5')
-    
-    # Load Intents
-    with open('chatbot/intents.json', 'r') as f:
-        intents = json.load(f)
-        
-    # Load Vocabulary (The Fix for ValueError)
-    with open('data.json', 'r') as f:
-        data = json.load(f)
-        words = data['words']
-        classes = data['classes']
-        
-    return model, intents, words, classes
+def download_nltk_resources():
+    resources = ['punkt', 'punkt_tab', 'wordnet', 'omw-1.4']
+    for res in resources:
+        nltk.download(res)
 
-model, intents, words, classes = load_all_resources()
+download_nltk_resources()
+
+# --- 2. LOAD MODEL AND DATA ---
 lemmatizer = WordNetLemmatizer()
 
-def get_response(user_input):
-    # 1. Preprocess input
-    sentence_words = nltk.word_tokenize(user_input)
-    sentence_words = [lemmatizer.lemmatize(w.lower()) for w in sentence_words]
-    
-    # 2. Create Bag of Words (Must be same length as 'words')
+# Load intents file
+if os.path.exists('intents.json'):
+    with open('intents.json', 'r') as f:
+        intents = json.load(f)
+else:
+    st.error("Error: 'intents.json' not found. Please upload it to your repository.")
+    st.stop()
+
+# Load trained model
+if os.path.exists('chatbot_model.h5'):
+    model = tf.keras.models.load_model('chatbot_model.h5')
+else:
+    st.error("Error: 'chatbot_model.h5' not found. Run your training script first.")
+    st.stop()
+
+# Recreate words and classes lists (Exactly as done in train.py)
+words = []
+classes = []
+ignore_letters = ['!', '?', ',', '.']
+
+for intent in intents['intents']:
+    if intent['tag'] not in classes:
+        classes.append(intent['tag'])
+    for pattern in intent['patterns']:
+        word_list = nltk.word_tokenize(pattern)
+        words.extend(word_list)
+
+words = sorted(list(set([lemmatizer.lemmatize(w.lower()) for w in words if w not in ignore_letters])))
+classes = sorted(list(set(classes)))
+
+# --- 3. HELPER FUNCTIONS ---
+def clean_up_sentence(sentence):
+    sentence_words = nltk.word_tokenize(sentence)
+    return [lemmatizer.lemmatize(word.lower()) for word in sentence_words]
+
+def bow(sentence, words):
+    sentence_words = clean_up_sentence(sentence)
     bag = [0] * len(words)
     for s in sentence_words:
         for i, w in enumerate(words):
             if w == s:
                 bag[i] = 1
+    return np.array(bag)
+
+def get_response(user_input):
+    p = bow(user_input, words)
+    res = model.predict(np.array([p]), verbose=0)[0] # verbose=0 hides logs
+    ERROR_THRESHOLD = 0.25
+    results = [[i, r] for i, r in enumerate(res) if r > ERROR_THRESHOLD]
+    results.sort(key=lambda x: x[1], reverse=True)
     
-    # 3. Predict
-    # This np.array([bag]) will now match the model's input shape perfectly
-    results = model.predict(np.array([bag]), verbose=0)[0]
-    idx = np.argmax(results)
-    tag = classes[idx]
-    
-    # 4. Logic for Tools
-    if results[idx] > 0.6:
-        if tag == "generate_image":
-            # Image logic
-            clean_prompt = user_input.lower().replace("draw", "").replace("generate", "")
-            img_url = f"https://image.pollinations.ai/prompt/{urllib.parse.quote(clean_prompt)}?nologo=true"
-            return "🎨 Here is your image:", img_url
-        
+    if len(results) > 0:
+        tag = classes[results[0][0]]
         for i in intents['intents']:
             if i['tag'] == tag:
-                return random.choice(i['responses']), None
-                
-    return "I'm not sure about that.", None
+                return random.choice(i['responses'])
+    
+    return "I'm sorry, I don't quite understand that."
 
-# --- STREAMLIT UI CODE REMAINS THE SAME ---
+# --- 4. STREAMLIT UI ---
+st.set_page_config(page_title="RNN Chatbot", page_icon="🤖")
+st.title("🤖 AI Chatbot")
+st.caption("Powered by RNN (LSTM) and Streamlit")
+
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Display chat history
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# User input
+if prompt := st.chat_input("Say something..."):
+    # Show user message
+    st.chat_message("user").markdown(prompt)
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
+    # Generate and show bot response
+    response = get_response(prompt)
+    with st.chat_message("assistant"):
+        st.markdown(response)
+    st.session_state.messages.append({"role": "assistant", "content": response})
