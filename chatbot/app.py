@@ -18,7 +18,7 @@ def load_all_resources():
     model = tf.keras.models.load_model('chatbot/chatbot_model.h5')
     
     # Load Intents
-    with open('intents.json', 'r') as f:
+    with open('chatbot/intents.json', 'r') as f:
         intents = json.load(f)
         
     # Load Vocabulary (The Fix for ValueError)
