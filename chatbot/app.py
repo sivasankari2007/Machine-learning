@@ -6,101 +6,95 @@ import json
 import random
 import tensorflow as tf
 import os
+from datetime import datetime
+import webbrowser # Tool for opening links
 
-# --- 1. MANDATORY NLTK DOWNLOADS ---
-# This prevents the LookupError on Streamlit Cloud
+# --- 1. SETUP & DOWNLOADS ---
 @st.cache_resource
-def download_nltk_resources():
-    resources = ['punkt', 'punkt_tab', 'wordnet', 'omw-1.4']
-    for res in resources:
-        nltk.download(res)
+def download_resources():
+    nltk.download('punkt')
+    nltk.download('punkt_tab')
+    nltk.download('wordnet')
 
-download_nltk_resources()
-
-# --- 2. LOAD MODEL AND DATA ---
+download_resources()
 lemmatizer = WordNetLemmatizer()
 
-# Load intents file
-if os.path.exists('chatbot/intents.json'):
-    with open('chatbot/intents.json', 'r') as f:
-        intents = json.load(f)
-else:
-    st.error("Error: 'intents.json' not found. Please upload it to your repository.")
-    st.stop()
+# --- 2. LOAD DATA ---
+model = tf.keras.models.load_model('chatbot_model.h5')
+with open('intents.json', 'r') as f:
+    intents = json.load(f)
 
-# Load trained model
-if os.path.exists('chatbot/chatbot_model.h5'):
-    model = tf.keras.models.load_model('chatbot/chatbot_model.h5')
-else:
-    st.error("Error: 'chatbot_model.h5' not found. Run your training script first.")
-    st.stop()
-
-# Recreate words and classes lists (Exactly as done in train.py)
+# Recreate vocabulary from intents.json
 words = []
 classes = []
-ignore_letters = ['!', '?', ',', '.']
-
 for intent in intents['intents']:
-    if intent['tag'] not in classes:
-        classes.append(intent['tag'])
+    if intent['tag'] not in classes: classes.append(intent['tag'])
     for pattern in intent['patterns']:
-        word_list = nltk.word_tokenize(pattern)
-        words.extend(word_list)
-
-words = sorted(list(set([lemmatizer.lemmatize(w.lower()) for w in words if w not in ignore_letters])))
+        words.extend(nltk.word_tokenize(pattern))
+words = sorted(list(set([lemmatizer.lemmatize(w.lower()) for w in words if w not in ['?', '!', '.', ',']])))
 classes = sorted(list(set(classes)))
 
-# --- 3. HELPER FUNCTIONS ---
-def clean_up_sentence(sentence):
-    sentence_words = nltk.word_tokenize(sentence)
-    return [lemmatizer.lemmatize(word.lower()) for word in sentence_words]
+# --- 3. THE TOOLS (NEW FEATURE) ---
+def get_system_time():
+    return datetime.now().strftime("%I:%M %p")
 
-def bow(sentence, words):
-    sentence_words = clean_up_sentence(sentence)
-    bag = [0] * len(words)
-    for s in sentence_words:
-        for i, w in enumerate(words):
-            if w == s:
-                bag[i] = 1
-    return np.array(bag)
+def search_google(query):
+    return f"https://www.google.com/search?q={query.replace(' ', '+')}"
 
+# --- 4. PROCESSING LOGIC ---
 def get_response(user_input):
-    p = bow(user_input, words)
-    res = model.predict(np.array([p]), verbose=0)[0] # verbose=0 hides logs
-    ERROR_THRESHOLD = 0.25
-    results = [[i, r] for i, r in enumerate(res) if r > ERROR_THRESHOLD]
-    results.sort(key=lambda x: x[1], reverse=True)
+    # Convert input to Bag of Words
+    sentence_words = nltk.word_tokenize(user_input)
+    sentence_words = [lemmatizer.lemmatize(word.lower()) for word in sentence_words]
+    bag = [1 if w in sentence_words else 0 for w in words]
     
-    if len(results) > 0:
-        tag = classes[results[0][0]]
+    # Predict
+    res = model.predict(np.array([bag]), verbose=0)[0]
+    idx = np.argmax(res)
+    tag = classes[idx]
+    prob = res[idx]
+
+    if prob > 0.5:
+        # Check for Tool Triggers
+        if tag == "time":
+            return f"The current time is {get_system_time()}"
+        if tag == "google":
+            return f"I've prepared a search for you: [Click here]({search_google(user_input)})"
+        
+        # Default response from JSON
         for i in intents['intents']:
             if i['tag'] == tag:
                 return random.choice(i['responses'])
     
-    return "I'm sorry, I don't quite understand that."
+    return "I'm not sure I understand. Can you try again?"
 
-# --- 4. STREAMLIT UI ---
-st.set_page_config(page_title="RNN Chatbot", page_icon="🤖")
-st.title("🤖 AI Chatbot")
-st.caption("Powered by RNN (LSTM) and Streamlit")
+# --- 5. STREAMLIT UI ---
+st.set_page_config(page_title="Smart RNN Assistant", page_icon="🧠")
 
-# Initialize chat history
+# Sidebar Tools
+with st.sidebar:
+    st.header("🛠️ Internal Tools")
+    st.write(f"📅 Date: {datetime.now().strftime('%Y-%m-%d')}")
+    if st.button("Clear Chat"):
+        st.session_state.messages = []
+        st.rerun()
+
+st.title("🧠 Smart RNN Assistant")
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display chat history
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-# User input
-if prompt := st.chat_input("Say something..."):
-    # Show user message
-    st.chat_message("user").markdown(prompt)
+if prompt := st.chat_input("Ask me a joke or the time..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-    # Generate and show bot response
     response = get_response(prompt)
+    
     with st.chat_message("assistant"):
         st.markdown(response)
     st.session_state.messages.append({"role": "assistant", "content": response})
