@@ -11,7 +11,7 @@ with open("diabetes/diabetes_model.pkl", "rb") as file:
 # -------------------------------
 # App Title
 # -------------------------------
-st.title("🩺 Diabetes Prediction App")
+st.title("🩺 Diabetes Prediction App By Sankari")
 st.write("Enter your details to predict the likelihood of diabetes.")
 
 # -------------------------------
@@ -34,4 +34,5 @@ if st.button("Predict"):
         st.error(f"The model predicts DIABETES with probability {probability:.2f}")
     else:
         st.success(f"The model predicts NO DIABETES with probability {1 - probability:.2f}")
+
 
