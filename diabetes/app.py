@@ -26,7 +26,7 @@ plas = st.number_input("Plasma Glucose Concentration", min_value=0.0, max_value=
 # Prediction Button
 # -------------------------------
 if st.button("Predict"):
-    input_data = np.array([[age, mass, insu, plas,glu]])
+    input_data = np.array([[age, mass, insu, plas]])
     prediction = model.predict(input_data)[0]
     probability = model.predict_proba(input_data)[0][1]  # probability of class 1 (diabetes)
 
@@ -34,6 +34,7 @@ if st.button("Predict"):
         st.error(f"The model predicts DIABETES with probability {probability:.2f}")
     else:
         st.success(f"The model predicts NO DIABETES with probability {1 - probability:.2f}")
+
 
 
 
