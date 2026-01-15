@@ -16,7 +16,7 @@ st.write("Upload a chest X-ray image to predict the disease class")
 # ---------------- LOAD MODEL ----------------
 @st.cache_resource
 def load_model():
-    return tf.keras.models.load_model("covid_cnn_model.h5")
+    return tf.keras.models.load_model("covid/covid_cnn_model.h5")
 
 try:
     model = load_model()
