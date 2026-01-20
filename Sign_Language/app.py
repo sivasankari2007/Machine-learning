@@ -6,7 +6,7 @@ from PIL import Image
 
 st.title("✋ Hand Gesture / Sign Language Recognition")
 
-model = load_model("hand_gesture_model.h5")
+model = load_model("Sign_Language/hand_gesture_model.h5")
 CLASSES = ['A','B','C','D','E']
 
 uploaded_file = st.file_uploader(
