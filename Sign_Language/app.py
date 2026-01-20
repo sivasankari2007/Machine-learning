@@ -11,7 +11,7 @@ st.title("✋ Hand Gesture / Sign Language Recognition")
 model = load_model("Sign_Language/hand_gesture_model.h5")
 
 # Load class names
-with open("class_names.json", "r") as f:
+with open("Sign_Language/class_names.json", "r") as f:
     CLASSES = json.load(f)
 
 uploaded_file = st.file_uploader(
