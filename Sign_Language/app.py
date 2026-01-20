@@ -8,7 +8,7 @@ import json
 st.title("✋ Hand Gesture / Sign Language Recognition")
 
 # Load model
-model = load_model("hand_gesture_model.h5")
+model = load_model("Sign_Language/hand_gesture_model.h5")
 
 # Load class names
 with open("class_names.json", "r") as f:
