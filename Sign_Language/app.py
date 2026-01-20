@@ -7,7 +7,7 @@ from tensorflow.keras.models import load_model
 from PIL import Image
 
 # ------------------ Load model ------------------
-model = load_model("hand_gesture_model.h5")
+model = load_model("Sign_Language/hand_gesture_model.h5")
 st.title("✋ Hand Gesture / Sign Language Recognition")
 
 # ------------------ Load Classes ------------------
