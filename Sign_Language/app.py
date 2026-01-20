@@ -21,16 +21,18 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    st.image(image, use_column_width=True)
 
     img = np.array(image)
     img = cv2.resize(img, (64, 64))
     img = img / 255.0
     img = np.expand_dims(img, axis=0)
 
+    # ---- PASTE HERE ----
     prediction = model.predict(img)
     class_id = int(np.argmax(prediction))
     confidence = float(np.max(prediction))
 
     st.success(f"Prediction: {CLASSES[class_id]}")
     st.info(f"Confidence: {confidence*100:.2f}%")
+
