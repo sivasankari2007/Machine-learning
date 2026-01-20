@@ -1,48 +1,31 @@
-# app.py
 import streamlit as st
-import cv2
 import numpy as np
-import tensorflow as tf
+import cv2
 from tensorflow.keras.models import load_model
 from PIL import Image
 
-# ------------------ Load model ------------------
-model = load_model("Sign_Language/hand_gesture_model.h5")
 st.title("✋ Hand Gesture / Sign Language Recognition")
 
-# ------------------ Load Classes ------------------
-CLASSES = ['A','B','C','D','E']  # Replace with your gesture folders names
+model = load_model("hand_gesture_model.h5")
+CLASSES = ['A','B','C','D','E']
 
-# ------------------ Webcam ------------------
-run = st.checkbox('Start Webcam')
-FRAME_WINDOW = st.image([])
+uploaded_file = st.file_uploader(
+    "Upload a hand gesture image",
+    type=["jpg","png","jpeg"]
+)
 
-cap = cv2.VideoCapture(0)
+if uploaded_file:
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image", use_column_width=True)
 
-while run:
-    ret, frame = cap.read()
-    if not ret:
-        st.write("Failed to grab frame")
-        break
+    img = np.array(image)
+    img = cv2.resize(img, (64,64))
+    img = img / 255.0
+    img = np.expand_dims(img, axis=0)
 
-    # Flip for mirror view
-    frame = cv2.flip(frame, 1)
+    prediction = model.predict(img)
+    class_id = np.argmax(prediction)
+    confidence = np.max(prediction)
 
-    # Preprocess frame
-    roi = cv2.resize(frame, (64,64))
-    roi = roi / 255.0
-    roi = np.expand_dims(roi, axis=0)
-
-    # Prediction
-    pred = model.predict(roi)
-    class_idx = np.argmax(pred)
-    confidence = np.max(pred)
-
-    # Display prediction
-    cv2.putText(frame, f"{CLASSES[class_idx]}: {confidence*100:.2f}%", (10,30),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv2.LINE_AA)
-
-    # Display in streamlit
-    FRAME_WINDOW.image(frame, channels='BGR')
-
-cap.release()
+    st.success(f"Prediction: {CLASSES[class_id]}")
+    st.info(f"Confidence: {confidence*100:.2f}%")
