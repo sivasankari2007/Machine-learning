@@ -17,7 +17,7 @@ st.set_page_config(
 # -----------------------------
 # Load Model
 # -----------------------------
-model = pickle.load(open("model/disease_model.pkl", "rb"))
+model = pickle.load(open("health_chatbot/disease_model.pkl", "rb"))
 le = pickle.load(open("model/label_encoder.pkl", "rb"))
 
 # -----------------------------
