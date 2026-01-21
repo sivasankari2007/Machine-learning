@@ -15,7 +15,7 @@ training_data = training_data.loc[:, ~training_data.columns.str.contains("^Unnam
 symptoms_list = list(training_data.columns[:-1])
 
 desc_df = pd.read_csv("health_chatbot/symptom/symptom_Description.csv")
-prec_df = pd.read_csv("symptom/symptom_precaution.csv")
+prec_df = pd.read_csv("health_chatbot/symptom/symptom_precaution.csv")
 
 # NLP Symptom Extraction
 def extract_symptoms(text):
