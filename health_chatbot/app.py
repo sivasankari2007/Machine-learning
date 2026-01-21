@@ -6,7 +6,7 @@ import re
 from difflib import get_close_matches
 
 # Load model
-model = pickle.load(open("model/disease_model.pkl", "rb"))
+model = pickle.load(open("health_chatbot/disease_model.pkl", "rb"))
 le = pickle.load(open("model/label_encoder.pkl", "rb"))
 
 # Load datasets
