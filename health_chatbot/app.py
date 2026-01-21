@@ -27,7 +27,7 @@ train_df = pd.read_csv("health_chatbot/Training.csv")
 train_df = train_df.loc[:, ~train_df.columns.str.contains("^Unnamed")]
 symptom_list = list(train_df.columns[:-1])
 
-desc_df = pd.read_csv("symptom/symptom_Description.csv")
+desc_df = pd.read_csv("health_chatbot/symptom/symptom_Description.csv")
 prec_df = pd.read_csv("symptom/symptom_precaution.csv")
 
 # Normalize column names (IMPORTANT)
