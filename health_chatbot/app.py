@@ -23,7 +23,7 @@ le = pickle.load(open("health_chatbot/label_encoder (2).pkl", "rb"))
 # -----------------------------
 # Load Datasets
 # -----------------------------
-train_df = pd.read_csv("dataset/Training.csv")
+train_df = pd.read_csv("health_chatbot/Training.csv")
 train_df = train_df.loc[:, ~train_df.columns.str.contains("^Unnamed")]
 symptom_list = list(train_df.columns[:-1])
 
