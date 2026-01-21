@@ -7,7 +7,7 @@ from difflib import get_close_matches
 
 # Load model
 model = pickle.load(open("health_chatbot/disease_model.pkl", "rb"))
-le = pickle.load(open("model/label_encoder.pkl", "rb"))
+le = pickle.load(open("health_chatbot/label_encoder (2).pkl", "rb"))
 
 # Load datasets
 training_data = pd.read_csv("dataset/Training.csv")
