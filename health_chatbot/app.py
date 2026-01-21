@@ -5,77 +5,136 @@ import pickle
 import re
 from difflib import get_close_matches
 
-# Load model
-model = pickle.load(open("health_chatbot/disease_model.pkl", "rb"))
-le = pickle.load(open("health_chatbot/label_encoder (2).pkl", "rb"))
+# -----------------------------
+# Page Config
+# -----------------------------
+st.set_page_config(
+    page_title="HealthCare Chatbot (ML + API)",
+    page_icon="🩺",
+    layout="wide"
+)
 
-# Load datasets
-training_data = pd.read_csv("health_chatbot/Training.csv")
-training_data = training_data.loc[:, ~training_data.columns.str.contains("^Unnamed")]
-symptoms_list = list(training_data.columns[:-1])
+# -----------------------------
+# Load Model
+# -----------------------------
+model = pickle.load(open("model/disease_model.pkl", "rb"))
+le = pickle.load(open("model/label_encoder.pkl", "rb"))
 
-desc_df = pd.read_csv("health_chatbot/symptom/symptom_Description.csv")
-prec_df = pd.read_csv("health_chatbot/symptom/symptom_precaution.csv")
+# -----------------------------
+# Load Datasets
+# -----------------------------
+train_df = pd.read_csv("dataset/Training.csv")
+train_df = train_df.loc[:, ~train_df.columns.str.contains("^Unnamed")]
+symptom_list = list(train_df.columns[:-1])
 
+desc_df = pd.read_csv("symptom/symptom_Description.csv")
+prec_df = pd.read_csv("symptom/symptom_precaution.csv")
+
+# Normalize column names (IMPORTANT)
+desc_df.columns = desc_df.columns.str.strip().str.lower()
+prec_df.columns = prec_df.columns.str.strip().str.lower()
+
+disease_col_desc = "disease" if "disease" in desc_df.columns else "prognosis"
+disease_col_prec = "disease" if "disease" in prec_df.columns else "prognosis"
+
+# -----------------------------
 # NLP Symptom Extraction
+# -----------------------------
 def extract_symptoms(text):
     text = text.lower()
-    words = re.findall(r'\w+', text)
-    detected = []
-
-    for word in words:
-        match = get_close_matches(word, symptoms_list, n=1, cutoff=0.75)
+    words = re.findall(r"\w+", text)
+    found = []
+    for w in words:
+        match = get_close_matches(w, symptom_list, n=1, cutoff=0.75)
         if match:
-            detected.append(match[0])
-    return list(set(detected))
+            found.append(match[0])
+    return list(set(found))
 
-# Streamlit UI
-st.set_page_config(page_title="Healthcare Chatbot", page_icon="🩺")
-st.title("🩺 AI Healthcare Chatbot")
-st.write("Tell me your symptoms in simple English 👇")
+# -----------------------------
+# UI
+# -----------------------------
+st.markdown(
+    "<h1 style='text-align:center;'>🩺 HealthCare Chatbot (ML + Live API)</h1>",
+    unsafe_allow_html=True
+)
+st.markdown(
+    "<p style='text-align:center;'>AI-based disease prediction using Random Forest</p>",
+    unsafe_allow_html=True
+)
 
-user_input = st.text_input("Enter your symptoms:")
+col1, col2 = st.columns([1, 1.2])
 
-if user_input:
-    symptoms = extract_symptoms(user_input)
+# -----------------------------
+# INPUT SECTION
+# -----------------------------
+with col1:
+    name = st.text_input("Your Name")
+    age = st.number_input("Age", min_value=0, max_value=120, value=0)
+    gender = st.radio("Gender", ["Male", "Female", "Other"])
+    symptoms_text = st.text_area("Describe your symptoms")
+    days = st.number_input("Number of Days", min_value=0, value=0)
+    severity = st.slider("Severity (1–10)", 1, 10, 1)
 
-    if len(symptoms) == 0:
-        st.error("❌ No symptoms detected. Please try again.")
-    else:
-        st.success(f"Detected Symptoms: {', '.join(symptoms)}")
+    submit = st.button("Submit", type="primary")
+    clear = st.button("Clear")
 
-        # Create input vector
-        input_vector = np.zeros(len(symptoms_list))
-        for symptom in symptoms:
-            input_vector[symptoms_list.index(symptom)] = 1
+# -----------------------------
+# OUTPUT SECTION
+# -----------------------------
+with col2:
+    st.subheader("🧾 Diagnosis Result")
 
-        # Prediction
-        prediction = model.predict([input_vector])[0]
-        probabilities = model.predict_proba([input_vector])[0]
-        confidence = max(probabilities)
+    if submit:
+        if symptoms_text.strip() == "":
+            st.error("❌ Please enter your symptoms.")
+        else:
+            symptoms = extract_symptoms(symptoms_text)
 
-        disease = le.inverse_transform([prediction])[0]
+            if not symptoms:
+                st.error("❌ No recognizable symptoms found.")
+            else:
+                st.success(f"Detected Symptoms: {', '.join(symptoms)}")
 
-        # Get description
-        desc = desc_df[desc_df["Disease"] == disease]["Description"].values[0]
+                input_vector = np.zeros(len(symptom_list))
+                for s in symptoms:
+                    input_vector[symptom_list.index(s)] = 1
 
-        # Get precautions
-        prec = prec_df[prec_df["Disease"] == disease].values.tolist()[0][1:]
+                pred = model.predict([input_vector])[0]
+                probs = model.predict_proba([input_vector])[0]
+                confidence = max(probs)
 
-        st.markdown("---")
-        st.subheader("🧠 Prediction Result")
-        st.write(f"**Disease:** {disease}")
-        st.write(f"**Confidence:** {round(confidence * 100, 2)}%")
+                disease = le.inverse_transform([pred])[0]
 
-        st.subheader("📖 Description")
-        st.write(desc)
+                desc_row = desc_df[desc_df[disease_col_desc] == disease]
+                description = (
+                    desc_row["description"].values[0]
+                    if not desc_row.empty
+                    else "No description available."
+                )
 
-        st.subheader("🛡️ Precautions")
-        for p in prec:
-            st.write("✔️", p)
+                prec_row = prec_df[prec_df[disease_col_prec] == disease]
+                precautions = (
+                    prec_row.values.tolist()[0][1:]
+                    if not prec_row.empty
+                    else ["Consult a doctor"]
+                )
 
-        st.subheader("💡 Health Tip")
-        st.info("Drink plenty of water, take proper rest, and consult a doctor if symptoms persist.")
+                st.markdown("---")
+                st.markdown(f"### 🦠 Predicted Disease: **{disease}**")
+                st.markdown(f"**Confidence:** {round(confidence * 100, 2)}%")
 
-        st.subheader("🌱 Motivation")
-        st.success("Your health is your wealth. Take care of yourself!")
+                st.markdown("### 📖 Description")
+                st.write(description)
+
+                st.markdown("### 🛡️ Precautions")
+                for p in precautions:
+                    st.write("✔️", p)
+
+                st.markdown("### 💡 Health Tip")
+                st.info("Drink plenty of water, take rest, and avoid self-medication.")
+
+                st.markdown("### 🌱 Motivation")
+                st.success("Your health is your greatest wealth. Take care!")
+
+    if clear:
+        st.experimental_rerun()
