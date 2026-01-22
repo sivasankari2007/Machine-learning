@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lung Cancer Prediction & Grad-CAM</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url("../static/Screenshot 2025-04-18 213116.png") no-repeat center center fixed;
+            background-size: cover;
+            margin: 20px;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 80px;
+            width: 100%;
+            max-width: 900px;
+            margin: 80px auto;
+            text-align: center;
+            box-shadow: 0px 0px 100px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #222;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        input[type="file"] {
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        img {
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            margin-top: 30px;
+            border-radius: 10px;
+        }
+        
+
+        .result {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-top: 30px;
+        }
+
+        .recommendation {
+            font-size: 1.1rem;
+            margin-top: 15px;
+            color: #333;
+        }
+
+        .blend-section {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 500.833px;
+            align-content: space-around;
+        }
+
+        .blend-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        .blend-wrapper img {
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .slider-label {
+            margin-top: 10px;
+            display: block;
+            color: #333;
+        }
+
+        input[type="range"] {
+            width: 50%;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+                padding: 100px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .btn {
+                font-size: 1rem;
+                padding: 10px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lung Cancer Prediction & Grad-CAM</h1>
+        <p class="tagline">Upload a lung scan to detect and visualize potential cancerous areas</p>
+        <form method="post" enctype="multipart/form-data">
+            <input type="file" name="file" required><br>
+            <button type="submit" class="btn">Upload & Predict</button>
+        </form>
+
+        {% if prediction %}
+            <div class="result">Prediction: {{ prediction }}</div>
+            <div class="recommendation">
+                {% if prediction == 'Benign' %}
+                    Recommendation: Follow up with your doctor regularly. Benign tumors are non-cancerous, but monitoring is important.
+                {% elif prediction == 'Malignant' %}
+                    Recommendation: Immediate medical consultation is advised. Malignant tumors may be cancerous and require treatment.
+                {% elif prediction == 'Normal' %}
+                    Recommendation: Lungs appear normal. Maintain healthy habits and schedule regular checkups.
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if uploaded_img and gradcam_img %}
+        <div class="blend-section">
+            <h3>Grad-CAM Visualization</h3>
+            <div class="blend-wrapper">
+                <img id="originalImg" src="{{ uploaded_img }}" style="opacity: 1; margin-top: 100px;">
+                <img id="gradcamImg" src="{{ gradcam_img }}" style="opacity: 0; margin-top: 100px;">
+            </div>
+            <label for="blendSlider" class="slider-label">Blend Grad-CAM:</label>
+            <input type="range" id="blendSlider" min="0" max="100" value="100" />
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        const originalImg = document.getElementById("originalImg");
+        const gradcamImg = document.getElementById("gradcamImg");
+        const blendSlider = document.getElementById("blendSlider");
+
+        if (blendSlider) {
+            blendSlider.addEventListener("input", () => {
+                const value = blendSlider.value / 100;
+                originalImg.style.opacity = 1 - value;
+                gradcamImg.style.opacity = value;
+            });
+        }
+    </script>
+</body>
+</html>
