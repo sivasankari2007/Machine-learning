@@ -86,11 +86,11 @@ def index():
         predicted_label = class_labels[predicted_class]
         recommendation = get_recommendation(predicted_label)
 
-        return render_template("index.html",
+        return render_template("lung_prediction/index.html",
                                uploaded_img=filepath,
                                gradcam_img=gradcam_path,
                                prediction=predicted_label,
                                recommendation=recommendation)
-    return render_template("index.html")
+    return render_template("lung_prediction/index.html")
 if __name__ == "__main__":
     app.run(debug=True)
