@@ -18,7 +18,7 @@ st.write("Upload a CT scan image to predict lung cancer and view Grad-CAM visual
 # ---------------- Load Model ----------------
 @st.cache_resource
 def load_trained_model():
-    return load_model("Lung_Model.h5")
+    return load_model("lung_prediction/Lung_Model.h5")
 
 model = load_trained_model()
 
