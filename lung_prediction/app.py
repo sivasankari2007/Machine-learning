@@ -1,96 +1,97 @@
-
 import os
-import numpy as np
 import cv2
+import numpy as np
 import tensorflow as tf
-from flask import Flask, request, render_template
+import streamlit as st
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import tensorflow.keras.backend as K
 
-app = Flask(__name__)
+# Reduce TF logs
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
-# Load trained model
-model = load_model(r"lung_prediction/lung_Cancer_Prediction.h5")
+st.set_page_config(page_title="Lung Cancer Detection", layout="centered")
 
-# Create folders
-UPLOAD_FOLDER = "static/uploads"
-RESULT_FOLDER = "static/results"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(RESULT_FOLDER, exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+st.title("🫁 Lung Cancer Detection using Deep Learning")
+st.write("Upload a CT scan image to predict lung cancer and view Grad-CAM visualization.")
 
-# Preprocess image
-def preprocess_image(img_path, target_size=(224, 224)):
-    img = image.load_img(img_path, target_size=target_size)
+# ---------------- Load Model ----------------
+@st.cache_resource
+def load_trained_model():
+    return load_model("Lung_Model.h5")
+
+model = load_trained_model()
+
+# ---------------- Get Last Conv Layer ----------------
+def get_last_conv_layer(model):
+    for layer in reversed(model.layers):
+        if isinstance(layer, tf.keras.layers.Conv2D):
+            return layer.name
+    raise ValueError("No Conv2D layer found.")
+
+LAST_CONV_LAYER = get_last_conv_layer(model)
+
+# ---------------- Preprocess ----------------
+def preprocess_image(img):
+    img = img.resize((224, 224))
     img = image.img_to_array(img)
     img = np.expand_dims(img, axis=0)
-    img = img / 255.0
-    return img
+    return img / 255.0
 
-# Grad-CAM
+# ---------------- Grad-CAM ----------------
 def generate_gradcam(model, img_array, layer_name):
     grad_model = tf.keras.models.Model(
-        [model.inputs], [model.get_layer(layer_name).output, model.output]
+        model.inputs,
+        [model.get_layer(layer_name).output, model.output]
     )
+
     with tf.GradientTape() as tape:
         conv_outputs, predictions = grad_model(img_array)
-        class_idx = np.argmax(predictions[0])
+        class_idx = tf.argmax(predictions[0])
         loss = predictions[:, class_idx]
+
     grads = tape.gradient(loss, conv_outputs)
-    pooled_grads = K.mean(grads, axis=(0, 1, 2))
+    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
     heatmap = tf.reduce_mean(conv_outputs * pooled_grads, axis=-1)
-    heatmap = np.maximum(heatmap, 0)
-    heatmap /= np.max(heatmap)
-    return heatmap[0], class_idx
+    heatmap = tf.maximum(heatmap, 0) / tf.reduce_max(heatmap)
+    return heatmap[0].numpy(), int(class_idx)
 
-# Heatmap overlay
-def overlay_heatmap(img_path, heatmap, alpha=0.5):
-    original_img = cv2.imread(img_path)
-    original_img = cv2.resize(original_img, (224, 224))
-    heatmap = cv2.resize(heatmap, (original_img.shape[1], original_img.shape[0]))
+# ---------------- Overlay ----------------
+def overlay_heatmap(original_img, heatmap):
+    img = cv2.cvtColor(np.array(original_img), cv2.COLOR_RGB2BGR)
+    img = cv2.resize(img, (224, 224))
+    heatmap = cv2.resize(heatmap, (224, 224))
     heatmap = np.uint8(255 * heatmap)
-    heatmap_colored = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
-    overlayed_img = cv2.addWeighted(original_img, 1 - alpha, heatmap_colored, alpha, 0)
-    return overlayed_img
+    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+    return cv2.addWeighted(img, 0.6, heatmap, 0.4, 0)
 
-# Recommendations
+# ---------------- Recommendation ----------------
 def get_recommendation(label):
-    recommendations = {
-        "Benign": "Benign lesion detected. Regular monitoring and follow-up with a physician are recommended.",
-        "Malignant": "Malignant lesion detected. Please consult an oncologist immediately for further diagnosis and treatment.",
-        "Normal": "No signs of lung cancer detected. Maintain a healthy lifestyle and consider regular checkups."
+    data = {
+        "Benign": "🟢 Benign lesion detected. Regular monitoring advised.",
+        "Malignant": "🔴 Malignant lesion detected. Consult oncologist immediately.",
+        "Normal": "✅ No lung cancer detected. Maintain a healthy lifestyle."
     }
-    return recommendations.get(label, "")
+    return data[label]
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        if "file" not in request.files:
-            return render_template("index.html", error="No file uploaded.")
-        file = request.files["file"]
-        if file.filename == "":
-            return render_template("index.html", error="No file selected.")
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
-        file.save(filepath)
+# ---------------- UI ----------------
+uploaded_file = st.file_uploader("Upload CT Scan Image", type=["jpg", "png", "jpeg"])
 
-        img_array = preprocess_image(filepath)
-        last_conv_layer = "block4_conv3"
-        heatmap, predicted_class = generate_gradcam(model, img_array, last_conv_layer)
-        overlayed_img = overlay_heatmap(filepath, heatmap)
+if uploaded_file:
+    from PIL import Image
+    img = Image.open(uploaded_file)
+    st.image(img, caption="Uploaded Image", use_column_width=True)
 
-        gradcam_path = os.path.join(RESULT_FOLDER, "gradcam_" + file.filename)
-        cv2.imwrite(gradcam_path, overlayed_img)
+    img_array = preprocess_image(img)
+    heatmap, pred_class = generate_gradcam(model, img_array, LAST_CONV_LAYER)
+    gradcam_img = overlay_heatmap(img, heatmap)
 
-        class_labels = ["Benign", "Malignant", "Normal"]
-        predicted_label = class_labels[predicted_class]
-        recommendation = get_recommendation(predicted_label)
+    labels = ["Benign", "Malignant", "Normal"]
+    prediction = labels[pred_class]
 
-        return render_template("lung_prediction/index.html",
-                               uploaded_img=filepath,
-                               gradcam_img=gradcam_path,
-                               prediction=predicted_label,
-                               recommendation=recommendation)
-    return render_template("lung_prediction/index.html")
-if __name__ == "__main__":
-    app.run(debug=True)
+    st.subheader("🧪 Prediction Result")
+    st.success(f"Prediction: **{prediction}**")
+    st.info(get_recommendation(prediction))
+
+    st.subheader("🔥 Grad-CAM Visualization")
+    st.image(gradcam_img, channels="BGR", use_column_width=True)
